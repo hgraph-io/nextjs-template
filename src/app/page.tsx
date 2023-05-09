@@ -1,38 +1,34 @@
 'use client'
 
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useRef} from 'react'
+import Client from '@hgraph.io/sdk'
 
-const query = `
+const LatestTransaction = `
 query LatestTransaction {
   transaction(limit: 1, order_by: {consensus_timestamp: desc}) {
     consensus_timestamp
   }
 }`
 
-const subscription = `
-subscription LatestTransaction {
-  transaction(limit: 1, order_by: {consensus_timestamp: desc}) {
-    consensus_timestamp
-  }
-}`
+const LatestTransactionSubscription = LatestTransaction.trim().replace(
+  'query',
+  'subscription'
+)
+
+const client = new Client()
 
 export default function Home() {
   const [state, setState] = useState('')
+
   useEffect(() => {
     async function fetchData() {
-      const {default: hg} = await import('@hgraph.io/sdk')
-      const response = await hg(query)
-      setState(BigInt(response.data.transaction[0].consensus_timestamp).toString())
+      setState(await client.query(LatestTransaction))
 
-      const unsubscribe = await hg(subscription, {
-        // The client supports filtering the response date using jmespath -  https://jmespath.org/
-        filter: 'data.transaction[0].consensus_timestamp',
+      const unsubscribe = await client.subscribe(LatestTransaction, {
         // handle the data
-        next: (data: bigint) => {
-          const diff = (BigInt(new Date().getTime()) - data / BigInt(1000000)) / BigInt(1000)
-          console.log(`consensus_timestamp was about ${diff} seconds ago`)
+        next: (data: any) => {
           console.log(data)
-          setState(data.toString())
+          setState(data)
         },
         error: (e: string) => {
           console.error(e)
@@ -42,10 +38,41 @@ export default function Home() {
         },
       })
 
+      return unsubscribe
+
       // clear subscription
-      setTimeout(unsubscribe, 10000)
+      // setTimeout(unsubscribe, 20000)
     }
-    fetchData()
   }, [])
-  return <div>Most recent consensus_timestamp: {state} </div>
+  // useEffect(() => {
+  //   console.log('callllled')
+  //   async function fetchData() {
+  //     setState(await client.query(LatestTransaction))
+
+  //     const unsubscribe = await client.subscribe(LatestTransaction, {
+  //       // handle the data
+  //       next: (data: any) => {
+  //         console.log(data)
+  //         setState(data)
+  //       },
+  //       error: (e: string) => {
+  //         console.error(e)
+  //       },
+  //       complete: () => {
+  //         console.log('Optionally do some cleanup')
+  //       },
+  //     })
+
+  //     return unsubscribe
+
+  //     // clear subscription
+  //     // setTimeout(unsubscribe, 20000)
+  //   }
+  //   fetchData()
+  // }, [])
+  return (
+    <div>
+      Most recent consensus_timestamp: <pre>{JSON.stringify(state)}</pre>
+    </div>
+  )
 }
