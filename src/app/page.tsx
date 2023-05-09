@@ -1,6 +1,6 @@
 'use client'
 
-import {useState, useEffect, useRef} from 'react'
+import {useState, useRef} from 'react'
 import Client from '@hgraph.io/sdk'
 
 const LatestTransaction = `
@@ -18,13 +18,16 @@ const LatestTransactionSubscription = LatestTransaction.trim().replace(
 const client = new Client()
 
 export default function Home() {
-  const [state, setState] = useState('')
+  const [state, setState] = useState()
+  const [subscribed, setSubscribed] = useState(false)
+  const unsubscribe = useRef(() => null)
 
-  useEffect(() => {
-    async function fetchData() {
-      setState(await client.query(LatestTransaction))
-
-      const unsubscribe = await client.subscribe(LatestTransaction, {
+  const toggle = () => {
+    if (subscribed) {
+      unsubscribe.current()
+      setSubscribed(false)
+    } else {
+      unsubscribe.current = client.subscribe(LatestTransactionSubscription, {
         // handle the data
         next: (data: any) => {
           console.log(data)
@@ -34,45 +37,18 @@ export default function Home() {
           console.error(e)
         },
         complete: () => {
+          unsubscribe.current = () => null
           console.log('Optionally do some cleanup')
         },
       })
-
-      return unsubscribe
-
-      // clear subscription
-      // setTimeout(unsubscribe, 20000)
+      setSubscribed(true)
     }
-  }, [])
-  // useEffect(() => {
-  //   console.log('callllled')
-  //   async function fetchData() {
-  //     setState(await client.query(LatestTransaction))
+  }
 
-  //     const unsubscribe = await client.subscribe(LatestTransaction, {
-  //       // handle the data
-  //       next: (data: any) => {
-  //         console.log(data)
-  //         setState(data)
-  //       },
-  //       error: (e: string) => {
-  //         console.error(e)
-  //       },
-  //       complete: () => {
-  //         console.log('Optionally do some cleanup')
-  //       },
-  //     })
-
-  //     return unsubscribe
-
-  //     // clear subscription
-  //     // setTimeout(unsubscribe, 20000)
-  //   }
-  //   fetchData()
-  // }, [])
   return (
     <div>
-      Most recent consensus_timestamp: <pre>{JSON.stringify(state)}</pre>
+      <button onClick={toggle}>{subscribed ? 'stop' : 'start'}</button>
+      <pre>{JSON.stringify(state)}</pre>
     </div>
   )
 }
