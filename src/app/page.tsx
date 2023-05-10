@@ -1,7 +1,9 @@
 'use client'
 
 import {useState, useRef} from 'react'
-import Client from '@hgraph.io/sdk'
+import Client, {ClientOptions, Network, Environment} from '@hgraph.io/sdk'
+
+console.log(Network)
 
 const LatestTransaction = `
 query LatestTransaction {
@@ -15,12 +17,17 @@ const LatestTransactionSubscription = LatestTransaction.trim().replace(
   'subscription'
 )
 
-const client = new Client()
+const options: ClientOptions = {
+  network: Network.HederaMainnet,
+  environment: Environment.Development,
+}
+
+const client = new Client(options)
 
 export default function Home() {
   const [state, setState] = useState()
   const [subscribed, setSubscribed] = useState(false)
-  const unsubscribe = useRef(() => null)
+  const unsubscribe = useRef(() => {})
 
   const toggle = () => {
     if (subscribed) {
@@ -33,11 +40,11 @@ export default function Home() {
           console.log(data)
           setState(data)
         },
-        error: (e: string) => {
+        error: (e) => {
           console.error(e)
         },
         complete: () => {
-          unsubscribe.current = () => null
+          unsubscribe.current = () => {}
           console.log('Optionally do some cleanup')
         },
       })
