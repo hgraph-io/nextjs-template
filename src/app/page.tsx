@@ -1,3 +1,4 @@
+//@ts-nocheck
 'use client'
 
 import {useState, useRef} from 'react'
@@ -18,8 +19,10 @@ const LatestTransactionSubscription = LatestTransaction.trim().replace(
 )
 
 const options: ClientOptions = {
-  network: Network.HederaMainnet,
-  environment: Environment.Development,
+  // network: Network.HederaMainnet,
+  // environment: Environment.Development,
+  network: 'mainnet.hedera',
+  environment: 'io',
 }
 
 const client = new Client(options)
