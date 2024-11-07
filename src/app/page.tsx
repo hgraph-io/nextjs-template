@@ -50,7 +50,7 @@ export default function Home() {
           unsubscribe.current = () => {}
           console.log('Optionally do some cleanup')
         },
-      })
+      }).unsubscribe;
       setSubscribed(true)
     }
   }
