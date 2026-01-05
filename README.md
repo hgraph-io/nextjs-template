@@ -1,36 +1,227 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# @hgraph.io/nextjs-template
 
-## Getting Started
+[![npm version](https://badge.fury.io/js/@hgraph.io%2Fnextjs-template.svg)](https://www.npmjs.com/package/@hgraph.io/nextjs-template)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-16.0-black)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.0-blue)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2-blue)](https://www.typescriptlang.org/)
 
-First, run the development server:
+A production-ready Next.js 16 template with built-in Hedera blockchain
+integration, TypeScript support, and modern web development best practices.
+
+## Features
+
+- **Next.js 16** - Latest version with App Router, Server Components, and React
+  19
+- **Hedera Integration** - Pre-configured
+  [@hgraph.io/sdk](https://www.npmjs.com/package/@hgraph.io/sdk) for blockchain
+  interactions
+- **Modern Stack** - React 19, Ethers.js 5, and optimized build configuration
+
+## 📦 Installation
+
+### Using npx (Recommended)
+
+Create a new project with a single command:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+npx @hgraph.io/nextjs-template my-app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This will create a new directory with all the necessary files and install
+dependencies automatically.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Using git clone
 
-[http://localhost:3000/api/hello](http://localhost:3000/api/hello) is an endpoint that uses [Route Handlers](https://beta.nextjs.org/docs/routing/route-handlers). This endpoint can be edited in `app/api/hello/route.ts`.
+```bash
+git clone https://github.com/hgraph-io/nextjs-template.git my-app
+cd my-app
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Using degit
 
-## Learn More
+Clone without git history:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npx degit hgraph-io/nextjs-template my-app
+cd my-app
+npm install
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Quick Start
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+1. **Set up environment variables**
 
-## Deploy on Vercel
+   Create a `.env.local` file in the root directory:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```env
+   NEXT_PUBLIC_HGRAPH_API_KEY=your_api_key_here
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+2. **Run the development server**
+
+   ```bash
+   npm run dev
+   ```
+
+3. **Open your browser**
+
+   Navigate to [http://localhost:3000](http://localhost:3000) to see your
+   application.
+
+4. **Explore the test suite**
+
+   Visit [http://localhost:3000/test-suite](http://localhost:3000/test-suite) to
+   see Hedera integration examples.
+
+## Usage
+
+### Basic Hedera Client Setup
+
+```typescript
+import Client, {Network, Environment} from '@hgraph.io/sdk'
+
+const client = new Client({
+  network: Network.HederaMainnet,
+  environment: Environment.Production,
+  headers: {
+    'x-api-key': process.env.NEXT_PUBLIC_HGRAPH_API_KEY || '',
+  },
+})
+```
+
+### Querying Transactions
+
+```typescript
+const result = await client.query(`
+  query LatestTransaction {
+    transaction(limit: 1, order_by: {consensus_timestamp: desc}) {
+      consensus_timestamp
+      transaction_hash
+      charged_tx_fee
+    }
+  }
+`)
+```
+
+### Querying Account Information
+
+```typescript
+const result = await client.query(`
+  query GetAccount {
+    entity(where: {id: {_eq: 98}}, limit: 1) {
+      id
+      balance
+      created_timestamp
+      memo
+    }
+  }
+`)
+```
+
+### Working with Tokens and NFTs
+
+```typescript
+const tokens = await client.query(`
+  query GetTokens {
+    token(limit: 5, order_by: {created_timestamp: desc}) {
+      token_id
+      name
+      symbol
+      decimals
+      initial_supply
+    }
+  }
+`)
+```
+
+## Project Structure
+
+```
+nextjs-template/
+├── src/
+│   └── app/
+│       ├── globals.css        # Global styles
+│       ├── layout.tsx         # Root layout
+│       ├── page.tsx           # Home page
+│       └── test-suite/        # Hedera API test examples
+│           └── page.tsx
+├── public/                    # Static assets
+├── .eslintrc.json            # ESLint configuration
+├── next.config.js            # Next.js configuration
+├── tsconfig.json             # TypeScript configuration
+└── package.json              # Project dependencies
+```
+
+## Available Scripts
+
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm start        # Start production server
+npm run lint     # Run ESLint
+```
+
+## Configuration
+
+### Next.js Config
+
+The template includes optimized Next.js configuration in `next.config.js`.
+Customize as needed for your project.
+
+### TypeScript Config
+
+TypeScript is pre-configured with strict mode and path aliases. Modify
+`tsconfig.json` to adjust settings.
+
+### Environment Variables
+
+Required environment variables:
+
+- `NEXT_PUBLIC_HGRAPH_API_KEY` - Your Hgraph API key for Hedera integration
+
+## API Reference
+
+### Hedera SDK
+
+This template uses
+[@hgraph.io/sdk](https://www.npmjs.com/package/@hgraph.io/sdk) for Hedera
+blockchain integration. The SDK provides:
+
+- Transaction queries
+- Account information
+- Token and NFT data
+- Smart contract interactions
+- Network state queries
+
+For complete API documentation, visit the
+[Hgraph SDK documentation](https://docs.hgraph.io).
+
+## Deployment
+
+### Vercel (Recommended)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/hgraph-io/nextjs-template)
+
+1. Push your code to GitHub
+2. Import your repository in Vercel
+3. Add your environment variables
+4. Deploy!
+
+## Links
+
+- **Documentation**: [https://docs.hgraph.io](https://docs.hgraph.io)
+- **GitHub**:
+  [https://github.com/hgraph-io/nextjs-template](https://github.com/hgraph-io/nextjs-template)
+- **npm**:
+  [https://www.npmjs.com/package/@hgraph.io/nextjs-template](https://www.npmjs.com/package/@hgraph.io/nextjs-template)
+- **Hedera**: [https://hedera.com](https://hedera.com)
+
+## Support
+
+- **Email**: [support@hgraph.com](mailto:support@hgraph.com)
+- **Issues**:
+  [GitHub Issues](https://github.com/hgraph-io/nextjs-template/issues)
+
+---
